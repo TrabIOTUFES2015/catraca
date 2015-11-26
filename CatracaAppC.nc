@@ -11,7 +11,7 @@ implementation {
   components PrintfC;
   components SerialStartC;
 
-  components new HamamatsuS1087ParC() as SensorDeLuz;
+  components new PhotoC() as SensorDeLuz;
 
 
 
