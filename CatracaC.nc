@@ -8,7 +8,7 @@ module CatracaC {
     interface StdControl as RoutingControl;
     interface Send;
     interface Leds;
-    interface Timer<TMilli>;
+    interface Timer<TMilli> as TimerLuz;
     interface RootControl;
     interface Receive;
 
@@ -23,49 +23,76 @@ implementation {
   uint16_t ultima_leitura = 0;
 
   /* Abaixo structs do protocolo firmado */
-  typedef enum tipo_pacote {
-    CONFIGURACAO, 
-    DADO_LUZ
-  } TipoPacote;
+  /*Definição de DTOs e payload*/
+  // typedef enum TipoPacote {
+  //   CONFIGURACAO, 
+  //   LUMINOSIDADE
+  // } TipoPacote;
 
+  
+
+  
   typedef nx_struct CatracaMsg {
+    //TipoPacote tipo, configuracao, reconfiguracao e luminosidade
     //TipoPacote tipo;
-    nx_uint16_t data;
+    nx_uint16_t dispositivoId;
+    nx_uint16_t luminosidade;
+    //void* payloadCatraca;
+
   } CatracaMsg;
 
+  /*Fim de dtos de protocolo*/
+
+
+
   event void Boot.booted() {
-    //call RadioControl.start();
-    call Timer.startPeriodic(2000);
+    printf("Iniciado....%u\n", ++counter);
+    printfflush();
+    call RadioControl.start();
+    if (TOS_NODE_ID != 1) {
+      call TimerLuz.startPeriodic(2000);      
+    }
+
   }
   
   event void RadioControl.startDone(error_t err) {    
-    if (err != SUCCESS)
+    if (err != SUCCESS) {
       call RadioControl.start();
-    else {
+    } else {
       call RoutingControl.start();
       if (TOS_NODE_ID == 1){ 
-	call RootControl.setRoot();        
-      }
-      else
-	call Timer.startPeriodic(5000);
-    }
-  }
+       call Leds.led0On();
+       call RootControl.setRoot();        
+      } 
+      // else {
+      //  call Timer.startPeriodic(5000);
+      // }
+   }
+ }
 
   event void RadioControl.stopDone(error_t err) {}
 
-  void sendMessage() {
+  void sendMessage() {    
     CatracaMsg* msg =
-      (CatracaMsg*)call Send.getPayload(&packet, sizeof(CatracaMsg));
-    msg->data = TOS_NODE_ID;
-    
-    if (call Send.send(&packet, sizeof(CatracaMsg)) != SUCCESS) 
-      call Leds.led0On();
-    else{ 
+      (CatracaMsg*)call Send.getPayload(&msg, sizeof(CatracaMsg));
+    msg->dispositivoId = TOS_NODE_ID;
+    msg->luminosidade = ultima_leitura;
+    printf("Tentando enviar pacote.... id=%u\n", TOS_NODE_ID);
+    call Leds.led0On();
+    if (call Send.send(&msg, sizeof(CatracaMsg)) != SUCCESS) {
+      call Leds.led0Off();
+      call Leds.led1Off();
+      printf("Nem enviou\n");
+    } else { 
+      call Leds.led0Off();
       sendBusy = TRUE;
       call Leds.led1On();
+      printf("Enviou\n");
     }
+
+    printfflush();
   }
-  event void Timer.fired() {    
+  event void TimerLuz.fired() {    
     // if (!sendBusy)
     //   sendMessage();
 
@@ -75,20 +102,38 @@ implementation {
   event void Send.sendDone(message_t* m, error_t err) {
     if (err == SUCCESS) { 
       call Leds.led0On();
-      call Leds.led2Off();
+      call Leds.led1On();      
+      printf("Envio Terminou com sucesso\n");
     } else {
-      call Leds.led2On();
+      call Leds.led1On();      
+      printf("Envio Terminou com falha\n");
     }
-    sendBusy = FALSE;
+    call Leds.led0On();
+    call Leds.led0Off();
     call Leds.led1Off();
+    sendBusy = FALSE;    
   }
   
   event message_t* Receive.receive(message_t* msg, void* payload, uint8_t len) {
-    CatracaMsg* pkt = (CatracaMsg*)payload;        
-    printf("%u\n", pkt->data);    
+
+    printf("Iniciando recebimento de pacote\n");
+
+    if (len == sizeof(CatracaMsg)) {
+
+      CatracaMsg* pkt = (CatracaMsg*) payload;        
+      call Leds.led1On();
+      
+      printf("Luminosida do sensor %u é igual a %u\n", pkt->dispositivoId, pkt->luminosidade);    
+      
+      call Leds.led1Off();
+    }
+      //call Leds.led1Toggle();        
+
+    printf("Terminando recebimento de pacote\n");
     printfflush();
-    call Leds.led1Toggle();        
     return msg;
+
+    
   }
 
 
@@ -98,26 +143,32 @@ implementation {
     if (result == SUCCESS){      
       printf("%u\n",data);
       printfflush();
+      ultima_leitura = data;
+      if (data > 600) {
+        call Leds.led2On();
+        if (!sendBusy) {
+          sendMessage();
+        }
+
+      } else {
+        call Leds.led2Off();
+      }
+
     }
 
-    if (data > 10) {
-      call Leds.led0On();
-    } else {
-      call Leds.led0Off();
-    }
+    // if (data > 10) {
+    //   call Leds.led0On();
+    // } else {
+    //   call Leds.led0Off();
+    // }
 
-    if (data > 100) {
-      call Leds.led1On();
-    } else {
-      call Leds.led1Off();
-    }
+    // if (data > 100) {
+    //   call Leds.led1On();
+    // } else {
+    //   call Leds.led1Off();
+    // }
 
-    if (data > 1000) {
-      call Leds.led2On();
-    } else {
-      call Leds.led2Off();
-    }
-
+    
   }
 
 }
