@@ -22,15 +22,6 @@ implementation {
   uint16_t counter = 0;
   uint16_t ultima_leitura = 0;
 
-  /* Abaixo structs do protocolo firmado */
-  /*Definição de DTOs e payload*/
-  // typedef enum TipoPacote {
-  //   CONFIGURACAO, 
-  //   LUMINOSIDADE
-  // } TipoPacote;
-
-  
-
   
   typedef nx_struct CatracaMsg {
     //TipoPacote tipo, configuracao, reconfiguracao e luminosidade
@@ -74,12 +65,12 @@ implementation {
 
   void sendMessage() {    
     CatracaMsg* msg =
-      (CatracaMsg*)call Send.getPayload(&msg, sizeof(CatracaMsg));
+      (CatracaMsg*)call Send.getPayload(&packet, sizeof(CatracaMsg));
     msg->dispositivoId = TOS_NODE_ID;
     msg->luminosidade = ultima_leitura;
     printf("Tentando enviar pacote.... id=%u\n", TOS_NODE_ID);
     call Leds.led0On();
-    if (call Send.send(&msg, sizeof(CatracaMsg)) != SUCCESS) {
+    if (call Send.send(&packet, sizeof(CatracaMsg)) != SUCCESS) {
       call Leds.led0Off();
       call Leds.led1Off();
       printf("Nem enviou\n");
