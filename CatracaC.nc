@@ -22,13 +22,29 @@ implementation {
   uint16_t counter = 0;
   uint16_t ultima_leitura = 0;
 
-  
+  /* Abaixo structs do protocolo firmado */
+  /*Definição de DTOs e payload*/
+  typedef enum TipoPacote {   
+    PEDIR_CONFIGURACAO, //Verificar se é necessário, pois se o pacote não for broadcast não será desnecessário, configuracao serve tanto p/ o root qnt p/ um endpoint 
+    CONFIGURACAO, 
+    LUMINOSIDADE
+  } TipoPacote;
+
+  // typedef nx_struct PedidoConfiguracao { 
+
+  // } PedidoConfiguracao;
+
+  // Dado monitorado pelos sensores
+  typedef nx_struct LeituraSensor { 
+    nx_uint16_t dispositivoId;
+    nx_uint16_t luminosidade;    
+  } LeituraSensor;
+
   typedef nx_struct CatracaMsg {
     //TipoPacote tipo, configuracao, reconfiguracao e luminosidade
     //TipoPacote tipo;
-    nx_uint16_t dispositivoId;
-    nx_uint16_t luminosidade;
     //void* payloadCatraca;
+    LeituraSensor leitura;
 
   } CatracaMsg;
 
@@ -66,8 +82,8 @@ implementation {
   void sendMessage() {    
     CatracaMsg* msg =
       (CatracaMsg*)call Send.getPayload(&packet, sizeof(CatracaMsg));
-    msg->dispositivoId = TOS_NODE_ID;
-    msg->luminosidade = ultima_leitura;
+    msg->leitura.dispositivoId = TOS_NODE_ID;
+    msg->leitura.luminosidade = ultima_leitura;
     printf("Tentando enviar pacote.... id=%u\n", TOS_NODE_ID);
     call Leds.led0On();
     if (call Send.send(&packet, sizeof(CatracaMsg)) != SUCCESS) {
@@ -114,7 +130,7 @@ implementation {
       CatracaMsg* pkt = (CatracaMsg*) payload;        
       call Leds.led1On();
       
-      printf("Luminosida do sensor %u é igual a %u\n", pkt->dispositivoId, pkt->luminosidade);    
+      printf("Luminosida do sensor %u é igual a %u\n", pkt->leitura.dispositivoId, pkt->leitura.luminosidade);    
       
       call Leds.led1Off();
     }
