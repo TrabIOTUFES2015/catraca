@@ -1,12 +1,22 @@
 #define NEW_PRINTF_SEMANTICS
 #include "printf.h"
+#include "Catraca.h"
 
 configuration CatracaAppC {}
 implementation {
   components CatracaC, MainC, LedsC, ActiveMessageC;
+  
+  components new TimerMilliC() as TimerLuz;
+  
+  //Usando api easycollection, porém não conseguir fazer end point escuta
   components CollectionC as Collector;
   components new CollectionSenderC(0xee);
-  components new TimerMilliC() as TimerLuz;
+
+  //Usando rádio comum
+  //components new AMSenderC(AM_RADIO_CATRACA_MSG) as AMSender;
+  components new AMReceiverC(AM_RADIO_CATRACA_MSG);
+
+  
 
   components PrintfC;
   components SerialStartC;
@@ -18,12 +28,19 @@ implementation {
 
   CatracaC.Boot -> MainC;
   CatracaC.RadioControl -> ActiveMessageC;
-  CatracaC.RoutingControl -> Collector;
+  
+
   CatracaC.Leds -> LedsC;
   CatracaC.TimerLuz -> TimerLuz;
+  
+  CatracaC.Receive -> AMReceiverC;
+  //CatracaC.Send -> AMSender;
+
+
+  //Usando api easy collection
   CatracaC.Send -> CollectionSenderC;
-  CatracaC.RootControl -> Collector;
-  CatracaC.Receive -> Collector.Receive[0xee];
+  //CatracaC.Receive -> Collector.Receive[0xee];
+  CatracaC.RoutingControl -> Collector;
 
   CatracaC.SensorDeLuz -> SensorDeLuz;
 

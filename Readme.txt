@@ -22,3 +22,13 @@ Melhorias
 
 * Dissemination. No caso ainda no quesito escalabilidade, poderiamos monitorar todas as porta de uma casa por exemplo, simplesmente um sensor repassando mensagens utilizando-se os diversos nós existentes na rede de sensores dentro da casa.
 
+
+Telos B
+
+Se detectar um queda na luminosidade: acender led0, se voltar ao normal apaga-lo.
+
+Se houver pacote pendente: acender led1, ao enviar apaga-lo. (Fazer sincrono, leitura e envio? Senão tomar cuidado com sincronismo)
+
+
+
+
