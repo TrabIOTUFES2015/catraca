@@ -30,7 +30,7 @@ A estrutura de dados de envio dos sensores telosb
 
 #define CONFIGURACAO 1
 #define REQ_CONF 2
-#define LEITURA 1
+#define LEITURA 3
 
 #define nx_bool nx_uint8_t
 
