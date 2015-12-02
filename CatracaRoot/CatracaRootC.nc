@@ -55,19 +55,19 @@ implementation {
     msg->tipo = CONFIGURACAO;
     
 
-    printf("Tentando enviar pacote de configuracao.... id=%u\n", TOS_NODE_ID);
+   // printf("Tentando enviar pacote de configuracao.... id=%u\n", TOS_NODE_ID);
     
     sendBusy = TRUE;
     call Leds.led0On();
     if (call AMSend.send(AM_BROADCAST_ADDR, &packet, sizeof(ConfiguracaoMsg)) != SUCCESS) {
       call Leds.led0Off();
       call Leds.led1Off();
-      printf("Nem enviou\n");
+      //printf("Nem enviou\n");
     } else { 
       call Leds.led0Off();
       //sendBusy = TRUE;
       call Leds.led1On();
-      printf("Enviou\n");
+      //printf("Enviou\n");
     }
 
     printfflush();
@@ -90,10 +90,10 @@ implementation {
       configuracaoPendente = FALSE;
       call Leds.led0On();
       call Leds.led1On();      
-      printf("Envio Terminou com sucesso\n");
+      //printf("Envio Terminou com sucesso\n");
     } else {
       call Leds.led1On();      
-      printf("Envio Terminou com falha\n");
+      //printf("Envio Terminou com falha\n");
     }
     call Leds.led0On();
     call Leds.led0Off();
@@ -113,7 +113,7 @@ implementation {
   void tratarPacoteCatraca(CatracaMsg* pkt) {
     //TODO tratar, verificar se é pedido de pacote de configuração
     if (pkt->tipo == REQ_CONF) {
-      printf("Pacote catraca - tipo %u -  dispositivoId - %u\n", pkt->tipo, pkt->dispositivoId);
+      printf("CATRACA|%u|%u\n", pkt->tipo, pkt->dispositivoId);
       sendConfiguracao(pkt->dispositivoId);
     }
     
@@ -123,7 +123,7 @@ implementation {
    
       call Leds.led1On();
       
-      printf("Luminosidade do sensor %u é igual a %u\n", pkt->dispositivoId, pkt->luminosidade);    
+      printf("LEITURA|%u|%u|\n", pkt->dispositivoId, pkt->luminosidade);    
       
       call Leds.led1Off();
 
@@ -131,7 +131,7 @@ implementation {
 
   void tratarPacoteConfiguracao(ConfiguracaoMsg* pkt) {
     //Fazer nada por enquanto
-    printf("Pacote de configuração... Root Ignora\n");
+    printf("CONFIGURACAO\n");
   }
 
   void tratarPacoteDesconhecido(void * pkt) {
@@ -142,7 +142,7 @@ implementation {
 
     //Encontrar uma maneira do root não receber o próprio pacote
 
-    printf("Chegou pacote\n");
+    //printf("Chegou pacote\n");
 
     switch(len) {
 
