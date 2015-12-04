@@ -56,7 +56,10 @@ A estrutura de dados de envio dos sensores telosb
   	TipoPacote tipo; // campo necessario apenas devido a tamanhos coincidentes 
   	DispositivoId dispositivoId;
   	nx_uint16_t tmpSensor; //Intervalo de monitoramento em millis
-  	nx_uint16_t tmpAck; //Intervalo de pacote ack em millis
+  	nx_uint16_t valorLuminancia;
+    nx_uint16_t tmpAck; //Intervalo de pacote ack em millis    
+    nx_bool transferirSempre;
+
 
   } ConfiguracaoMsg;
 

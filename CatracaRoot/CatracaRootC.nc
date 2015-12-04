@@ -53,6 +53,7 @@ implementation {
     msg->dispositivoId = dispositivoId; //Broadcasting por enquanto
     msg->tmpSensor = 2000;
     msg->tipo = CONFIGURACAO;
+    msg->valorLuminancia = 800;
     
 
    // printf("Tentando enviar pacote de configuracao.... id=%u\n", TOS_NODE_ID);

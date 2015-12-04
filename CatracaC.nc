@@ -22,6 +22,8 @@ implementation {
   bool configurado = FALSE;
   uint16_t counter = 0;
   uint16_t ultima_leitura = 0;
+  uint16_t valorLuminancia = 890;
+  bool transferirSempre = FALSE;
 
 
 
@@ -168,6 +170,8 @@ implementation {
       printf("Pacote de configuracao chegou... tmpSensor=%u\n", pkt->tmpSensor);
       configurado = FALSE;
 
+      valorLuminancia = pkt->valorLuminancia;
+
       //(Re)configurando  tempo de leitura do sensor
       call TimerLuz.stop();
       //Reiniciar o tempo de leitura com base no parâmetro passado
@@ -221,7 +225,7 @@ implementation {
       printf("%u\n",data);
       printfflush();
       ultima_leitura = data;
-      if (data > 300) {
+      if (data < valorLuminancia) {
         call Leds.led2On();
         if (configurado && !sendBusy) {
           sendLeitura(data);
@@ -229,6 +233,8 @@ implementation {
 
       } else {
         call Leds.led2Off();
+        if (transferirSempre && !sendBusy)
+          sendLeitura(data);
       }
 
     }
